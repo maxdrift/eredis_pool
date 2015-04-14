@@ -16,6 +16,9 @@ compile:
 xref:
 	@$(REBAR) xref skip_deps=true
 
+console:
+	@$(ERL) -pa $(BEAMDIR)
+
 clean: 
 	@ $(REBAR) clean
 
