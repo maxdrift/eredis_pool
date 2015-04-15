@@ -11,15 +11,14 @@
   {env, []}
 
 %% sample configuration.
-%%
-%%  {env, [
+%%   {env, [
+%%          {global_or_local, global},
 %%          {pools, [
 %%                   {dbsrv, [
-%%                              {size, 10},
-%%                              {max_overflow, 30}
-%%                             ]}
-%%	          ]}
-%%        ]}
-%%
+%%                            {size, 10},
+%%                            {max_overflow, 20}
+%%                           ], [] }
+%%                  ]}
+%%         ]}
 
 ]}.
