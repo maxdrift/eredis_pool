@@ -20,8 +20,9 @@
 %% ===================================================================
 
 start_link() ->
-    {ok, Pools} = application:get_env(eredis_pool, pools),
-    {ok, GlobalOrLocal} = application:get_env(eredis_pool, global_or_local),
+    Pools = application:get_env(eredis_pool, pools, []),
+    GlobalOrLocal = application:get_env(eredis_pool,
+                                        global_or_local, local),
     start_link(Pools, GlobalOrLocal).
 
 start_link(Pools, GlobalOrLocal) ->
