@@ -19,7 +19,7 @@
 -export([start/0, stop/0]).
 -export([q/2, q/3, qp/2, qp/3, transaction/2,
          create_pool/2, create_pool/3, create_pool/4, create_pool/5,
-         create_pool/6, create_pool/7, 
+         create_pool/6, create_pool/7,
          delete_pool/1]).
 
 %%%===================================================================
@@ -36,36 +36,36 @@ stop() ->
 %% @doc create new pool.
 %% @end
 %% ===================================================================
--spec(create_pool(PoolName::atom(), Size::integer()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size) ->
     eredis_pool_sup:create_pool(PoolName, Size, []).
 
--spec(create_pool(PoolName::atom(), Size::integer(), Host::string()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer(), Host::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size, Host) ->
     eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}]).
 
--spec(create_pool(PoolName::atom(), Size::integer(), 
-                  Host::string(), Port::integer()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  Host::string(), Port::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size, Host, Port) ->
     eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port}]).
 
--spec(create_pool(PoolName::atom(), Size::integer(), 
-                  Host::string(), Port::integer(), Database::string()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  Host::string(), Port::integer(), Database::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size, Host, Port, Database) ->
     eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port},
                                                  {database, Database}]).
 
--spec(create_pool(PoolName::atom(), Size::integer(), 
-                  Host::string(), Port::integer(), 
-                  Database::string(), Password::string()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  Host::string(), Port::integer(),
+                  Database::string(), Password::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size, Host, Port, Database, Password) ->
@@ -73,10 +73,10 @@ create_pool(PoolName, Size, Host, Port, Database, Password) ->
                                                  {database, Database},
                                                  {password, Password}]).
 
--spec(create_pool(PoolName::atom(), Size::integer(), 
-                  Host::string(), Port::integer(), 
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  Host::string(), Port::integer(),
                   Database::string(), Password::string(),
-                  ReconnectSleep::integer()) -> 
+                  ReconnectSleep::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size, Host, Port, Database, Password, ReconnectSleep) ->
@@ -135,12 +135,16 @@ transaction(PoolName, Fun) when is_function(Fun) ->
                     {ok, <<"OK">>} = eredis:q(C, ["MULTI"]),
                     Fun(C),
                     eredis:q(C, ["EXEC"])
-                catch Klass:Reason ->
+                catch
+                    error:{badmatch,{error,no_connection}} ->
+                        io:format("Unable to connect to Redis"),
+                        {error, no_connection};
+                    Klass:Reason ->
                         {ok, <<"OK">>} = eredis:q(C, ["DISCARD"]),
-                        io:format("Error in redis transaction. ~p:~p", 
+                        io:format("Error in redis transaction. ~p:~p",
                                   [Klass, Reason]),
                         {Klass, Reason}
                 end
         end,
 
-    poolboy:transaction(PoolName, F).    
+    poolboy:transaction(PoolName, F).
