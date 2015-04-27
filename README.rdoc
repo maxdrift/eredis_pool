@@ -64,8 +64,15 @@ add new pools.
                               {database, "user_db"},
                               {password, "abc"},
                               {reconnect_sleep, 100}
+                             ]},
+                   {pool3, [
+                              {size, 10},
+                              {max_overflow, 30}
+                           ], [
+                              {port, 6380},
+                              {require_redis_on_start, false}
                              ]}
-                  ]}
+           ]}
         ]}
 
 
