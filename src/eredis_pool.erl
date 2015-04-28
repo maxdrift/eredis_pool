@@ -18,8 +18,8 @@
 %% API
 -export([start/0, stop/0]).
 -export([q/2, q/3, qp/2, qp/3, transaction/2,
-         create_pool/2, create_pool/3, create_pool/4, create_pool/5,
-         create_pool/6, create_pool/7,
+         create_pool/3, create_pool/4, create_pool/5, create_pool/6,
+         create_pool/7, create_pool/8,
          delete_pool/1]).
 
 %%%===================================================================
@@ -36,51 +36,56 @@ stop() ->
 %% @doc create new pool.
 %% @end
 %% ===================================================================
--spec(create_pool(PoolName::atom(), Size::integer()) ->
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  MaxOverflow::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
-create_pool(PoolName, Size) ->
-    eredis_pool_sup:create_pool(PoolName, Size, []).
-
--spec(create_pool(PoolName::atom(), Size::integer(), Host::string()) ->
-             {ok, pid()} | {error,{already_started, pid()}}).
-
-create_pool(PoolName, Size, Host) ->
-    eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}]).
+create_pool(PoolName, Size, MaxOverflow) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, []).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
-                  Host::string(), Port::integer()) ->
+                  MaxOverflow::integer(), Host::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
-create_pool(PoolName, Size, Host, Port) ->
-    eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port}]).
+create_pool(PoolName, Size, MaxOverflow, Host) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}]).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
-                  Host::string(), Port::integer(), Database::string()) ->
+                  MaxOverflow::integer(), Host::string(),
+                  Port::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
-create_pool(PoolName, Size, Host, Port, Database) ->
-    eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port},
+create_pool(PoolName, Size, MaxOverflow, Host, Port) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port}]).
+
+-spec(create_pool(PoolName::atom(), Size::integer(),
+                  MaxOverflow::integer(), Host::string(),
+                  Port::integer(), Database::string()) ->
+             {ok, pid()} | {error,{already_started, pid()}}).
+
+create_pool(PoolName, Size, MaxOverflow, Host, Port, Database) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
                                                  {database, Database}]).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
-                  Host::string(), Port::integer(),
-                  Database::string(), Password::string()) ->
+                  MaxOverflow::integer(), Host::string(),
+                  Port::integer(), Database::string(),
+                  Password::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
-create_pool(PoolName, Size, Host, Port, Database, Password) ->
-    eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port},
+create_pool(PoolName, Size, MaxOverflow, Host, Port, Database, Password) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
                                                  {database, Database},
                                                  {password, Password}]).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
-                  Host::string(), Port::integer(),
-                  Database::string(), Password::string(),
-                  ReconnectSleep::integer()) ->
+                  MaxOverflow::integer(), Host::string(),
+                  Port::integer(), Database::string(),
+                  Password::string(), ReconnectSleep::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
-create_pool(PoolName, Size, Host, Port, Database, Password, ReconnectSleep) ->
-    eredis_pool_sup:create_pool(PoolName, Size, [{host, Host}, {port, Port},
+create_pool(PoolName, Size, MaxOverflow, Host, Port, Database, Password, ReconnectSleep) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
                                                  {database, Database},
                                                  {password, Password},
                                                  {reconnect_sleep, ReconnectSleep}]).
@@ -125,7 +130,7 @@ qp(PoolName, Pipeline) ->
 
 qp(PoolName, Pipeline, Timeout) ->
     poolboy:transaction(PoolName, fun(Worker) ->
-   		eredis:qp(Worker, Pipeline, Timeout)
+        eredis:qp(Worker, Pipeline, Timeout)
     end).
 
 

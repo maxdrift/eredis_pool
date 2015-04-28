@@ -85,22 +85,22 @@ application start.
 key-value set and get
  eredis_pool:q({global, dbsrv}, ["SET", "foo", "bar"]).
  {ok,<<"OK">>}
- 
- eredis_pool:q({global, dbsrv}, ["GET", "foo"]).       
+
+ eredis_pool:q({global, dbsrv}, ["GET", "foo"]).
  {ok,<<"bar">>}
 
 Redis Pipeline
  Pipeline = [["SET", a, "1"],
       ["LPUSH", b, "3"],
       ["LPUSH", b, "2"]].
- eredis_pool:qp({global,dbsrv}, Pipeline).    
- 
+ eredis_pool:qp({global,dbsrv}, Pipeline).
+
 create new pool with default settings.
  eredis_pool:create_pool(pool1, 10).
  {ok,<0.64.0>}
 
 and omissible argments(host, port, database, password reconnect_sleep).
- eredis_pool:create_pool(pool1, 10, "127.0.0.1", 6379, 1, "abc", 100).
+ eredis_pool:create_pool(pool1, 10, 0, "127.0.0.1", 6379, 1, "abc", 100).
  {ok,<0.64.0>}
 
 using new pool
@@ -108,7 +108,7 @@ using new pool
  {ok,<<"bar">>}
 
 delete pool
- eredis_pool:delete_pool(pool1).    
+ eredis_pool:delete_pool(pool1).
  ok
 
 
