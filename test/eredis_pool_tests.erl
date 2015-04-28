@@ -131,7 +131,7 @@ basic_test_() ->
        { "new pool create and delete",
          fun() ->
                  ?assertMatch({ok, _},
-                              eredis_pool:create_pool(pool1, 10)),
+                              eredis_pool:create_pool(pool1, 10, 0)),
 
                  ?assertMatch({ok, _}, eredis_pool:q(pool1, ["DEL", foo1])),
 
