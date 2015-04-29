@@ -4,7 +4,7 @@
 
 -import(eredis, [create_multibulk/1]).
 
--define(Setup, fun() -> application:start(eredis_pool)  end).
+-define(Setup, fun() -> application:ensure_all_started(eredis_pool) end).
 -define(Clearnup, fun(_) -> application:stop(eredis_pool)  end).
 -define(DEFAULT, dbsrv).
 
