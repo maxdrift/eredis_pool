@@ -79,7 +79,7 @@ add new pools.
 ==Examples
 
 application start.
- eredis_pool:start().
+ application:ensure_all_started(eredis_pool).
  ok
 
 key-value set and get

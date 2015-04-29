@@ -18,8 +18,8 @@
 %% API
 -export([start/0, stop/0]).
 -export([q/2, q/3, qp/2, qp/3, transaction/2,
-         create_pool/3, create_pool/4, create_pool/5, create_pool/6,
-         create_pool/7, create_pool/8,
+         create_pool/2, create_pool/3, create_pool/4, create_pool/5,
+         create_pool/6, create_pool/7, create_pool/8,
          delete_pool/1]).
 
 %%%===================================================================
@@ -36,6 +36,12 @@ stop() ->
 %% @doc create new pool.
 %% @end
 %% ===================================================================
+-spec(create_pool(PoolName::atom(), Size::integer()) ->
+             {ok, pid()} | {error,{already_started, pid()}}).
+
+create_pool(PoolName, Size) ->
+    eredis_pool_sup:create_pool(PoolName, {Size, 10}, []).
+
 -spec(create_pool(PoolName::atom(), Size::integer(),
                   MaxOverflow::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).

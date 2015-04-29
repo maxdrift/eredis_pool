@@ -4,7 +4,7 @@
 
 -import(eredis, [create_multibulk/1]).
 
--define(Setup, fun() -> application:start(eredis_pool)  end).
+-define(Setup, fun() -> application:ensure_all_started(eredis_pool) end).
 -define(Clearnup, fun(_) -> application:stop(eredis_pool)  end).
 -define(DEFAULT, dbsrv).
 
@@ -131,7 +131,7 @@ basic_test_() ->
        { "new pool create and delete",
          fun() ->
                  ?assertMatch({ok, _},
-                              eredis_pool:create_pool(pool1, 10, 0)),
+                              eredis_pool:create_pool(pool1, 10)),
 
                  ?assertMatch({ok, _}, eredis_pool:q(pool1, ["DEL", foo1])),
 
