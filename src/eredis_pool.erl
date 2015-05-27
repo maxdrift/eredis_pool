@@ -17,7 +17,7 @@
 
 %% API
 -export([start/0, stop/0]).
--export([q/2, q/3, qp/2, qp/3, transaction/2,
+-export([q/2, q/3, qp/2, qp/3, transaction/2, transaction/3,
          create_pool/2, create_pool/3, create_pool/4, create_pool/5,
          create_pool/6, create_pool/7, create_pool/8,
          delete_pool/1]).
@@ -126,7 +126,7 @@ q(PoolName, Command) ->
 q(PoolName, Command, Timeout) ->
     poolboy:transaction(PoolName, fun(Worker) ->
                                           eredis:q(Worker, Command, Timeout)
-                                  end).
+                                  end, Timeout).
 
 -spec qp(PoolName::atom(), Command::iolist(), Timeout::integer()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
@@ -137,25 +137,26 @@ qp(PoolName, Pipeline) ->
 qp(PoolName, Pipeline, Timeout) ->
     poolboy:transaction(PoolName, fun(Worker) ->
         eredis:qp(Worker, Pipeline, Timeout)
-    end).
-
+    end, Timeout).
 
 transaction(PoolName, Fun) when is_function(Fun) ->
+    transaction(PoolName, Fun, ?TIMEOUT).
+
+transaction(PoolName, Fun, Timeout) when is_function(Fun) ->
     F = fun(C) ->
                 try
-                    {ok, <<"OK">>} = eredis:q(C, ["MULTI"]),
+                    {ok, <<"OK">>} = eredis:q(C, ["MULTI"], Timeout),
                     Fun(C),
-                    eredis:q(C, ["EXEC"])
+                    eredis:q(C, ["EXEC"], Timeout)
                 catch
                     error:{badmatch,{error,no_connection}} ->
                         io:format("Unable to connect to Redis"),
                         {error, no_connection};
                     Klass:Reason ->
-                        {ok, <<"OK">>} = eredis:q(C, ["DISCARD"]),
+                        {ok, <<"OK">>} = eredis:q(C, ["DISCARD"], Timeout),
                         io:format("Error in redis transaction. ~p:~p",
                                   [Klass, Reason]),
                         {Klass, Reason}
                 end
         end,
-
-    poolboy:transaction(PoolName, F).
+    poolboy:transaction(PoolName, F, Timeout).
