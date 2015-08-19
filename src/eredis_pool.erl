@@ -42,21 +42,18 @@ stop() ->
 %% ===================================================================
 -spec(create_pool(PoolName::atom(), Size::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size) ->
     eredis_pool_sup:create_pool(PoolName, {Size, 10}, []).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
                   MaxOverflow::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, []).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
                   MaxOverflow::integer(), Host::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow, Host) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}]).
 
@@ -64,7 +61,6 @@ create_pool(PoolName, Size, MaxOverflow, Host) ->
                   MaxOverflow::integer(), Host::string(),
                   Port::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow, Host, Port) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port}]).
 
@@ -72,33 +68,30 @@ create_pool(PoolName, Size, MaxOverflow, Host, Port) ->
                   MaxOverflow::integer(), Host::string(),
                   Port::integer(), Database::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow, Host, Port, Database) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
-                                                 {database, Database}]).
+                                                                {database, Database}]).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
                   MaxOverflow::integer(), Host::string(),
                   Port::integer(), Database::string(),
                   Password::string()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow, Host, Port, Database, Password) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
-                                                 {database, Database},
-                                                 {password, Password}]).
+                                                                {database, Database},
+                                                                {password, Password}]).
 
 -spec(create_pool(PoolName::atom(), Size::integer(),
                   MaxOverflow::integer(), Host::string(),
                   Port::integer(), Database::string(),
                   Password::string(), ReconnectSleep::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
-
 create_pool(PoolName, Size, MaxOverflow, Host, Port, Database, Password, ReconnectSleep) ->
     eredis_pool_sup:create_pool(PoolName, {Size, MaxOverflow}, [{host, Host}, {port, Port},
-                                                 {database, Database},
-                                                 {password, Password},
-                                                 {reconnect_sleep, ReconnectSleep}]).
+                                                                {database, Database},
+                                                                {password, Password},
+                                                                {reconnect_sleep, ReconnectSleep}]).
 
 
 %% ===================================================================
@@ -106,7 +99,6 @@ create_pool(PoolName, Size, MaxOverflow, Host, Port, Database, Password, Reconne
 %% @end
 %% ===================================================================
 -spec(delete_pool(PoolName::atom()) -> ok | {error,not_found}).
-
 delete_pool(PoolName) ->
     eredis_pool_sup:delete_pool(PoolName).
 
@@ -120,20 +112,17 @@ delete_pool(PoolName) ->
 %%--------------------------------------------------------------------
 -spec q(PoolName::atom(), Command::iolist()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
-
 q(PoolName, Command) ->
     q(PoolName, Command, ?TIMEOUT).
 
 -spec q(PoolName::atom(), Command::iolist(), Timeout::integer()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
-
 q(PoolName, Command, Timeout) ->
     q(PoolName, Command, Timeout, ?POOL_TIMEOUT).
 
 -spec q(PoolName::atom(), Command::iolist(),
         Timeout::integer(), PoolTimeout::integer()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
-
 q(PoolName, Command, Timeout, PoolTimeout) ->
     poolboy:transaction(PoolName, fun(Worker) ->
                                           eredis:q(Worker, Command, Timeout)
