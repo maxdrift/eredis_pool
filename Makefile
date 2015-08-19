@@ -19,13 +19,13 @@ xref:
 console:
 	@$(ERL) -pa $(BEAMDIR)
 
-clean: 
+clean:
 	@ $(REBAR) clean
 
 eunit:
 	@rm -rf .eunit
 	@mkdir -p .eunit
-	@ERL_FLAGS="-config test.config" $(REBAR) skip_deps=true eunit 
+	@ERL_FLAGS="-config test.config" $(REBAR) skip_deps=true eunit
 
 test: eunit
 
