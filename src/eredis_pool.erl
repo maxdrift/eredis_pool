@@ -10,17 +10,21 @@
 
 %% Include
 -include_lib("eunit/include/eunit.hrl").
+-include_lib("eredis/include/eredis.hrl").
 
 %% Default timeout for calls to the client gen_server
 %% Specified in http://www.erlang.org/doc/man/gen_server.html#call-3
 -define(TIMEOUT, 5000).
+-define(POOL_TIMEOUT, 5000).
 
 %% API
 -export([start/0, stop/0]).
--export([q/2, q/3, qp/2, qp/3, transaction/2, transaction/3,
-         create_pool/2, create_pool/3, create_pool/4, create_pool/5,
-         create_pool/6, create_pool/7, create_pool/8,
-         delete_pool/1]).
+-export([create_pool/2, create_pool/3, create_pool/4, create_pool/5,
+         create_pool/6, create_pool/7, create_pool/8]).
+-export([delete_pool/1]).
+-export([q/2, q/3, q/4]).
+-export([qp/2, qp/3, qp/4]).
+-export([transaction/2, transaction/3, transaction/4]).
 
 %%%===================================================================
 %%% API functions
@@ -124,25 +128,49 @@ q(PoolName, Command) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 
 q(PoolName, Command, Timeout) ->
-    poolboy:transaction(PoolName, fun(Worker) ->
-                                          eredis:q(Worker, Command, Timeout)
-                                  end, Timeout).
+    q(PoolName, Command, Timeout, ?POOL_TIMEOUT).
 
--spec qp(PoolName::atom(), Command::iolist(), Timeout::integer()) ->
+-spec q(PoolName::atom(), Command::iolist(),
+        Timeout::integer(), PoolTimeout::integer()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 
+q(PoolName, Command, Timeout, PoolTimeout) ->
+    poolboy:transaction(PoolName, fun(Worker) ->
+                                          eredis:q(Worker, Command, Timeout)
+                                  end, PoolTimeout).
+
+-spec qp(PoolName::atom(), Pipeline::pipeline()) ->
+                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 qp(PoolName, Pipeline) ->
     qp(PoolName, Pipeline, ?TIMEOUT).
 
+-spec qp(PoolName::atom(), Pipeline::pipeline(), Timeout::integer()) ->
+                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 qp(PoolName, Pipeline, Timeout) ->
-    poolboy:transaction(PoolName, fun(Worker) ->
-        eredis:qp(Worker, Pipeline, Timeout)
-    end, Timeout).
+    qp(PoolName, Pipeline, Timeout, ?POOL_TIMEOUT).
 
+-spec qp(PoolName::atom(), Pipeline::pipeline(),
+         Timeout::integer(), PoolTimeout::integer()) ->
+                {ok, binary() | [binary()]} | {error, Reason::binary()}.
+qp(PoolName, Pipeline, Timeout, PoolTimeout) ->
+    poolboy:transaction(PoolName, fun(Worker) ->
+                                          eredis:qp(Worker, Pipeline, Timeout)
+                                  end, PoolTimeout).
+
+-spec transaction(PoolName::atom(), Fun::fun()) ->
+                         {ok, [binary()]} | {error, Reason::binary()}.
 transaction(PoolName, Fun) when is_function(Fun) ->
     transaction(PoolName, Fun, ?TIMEOUT).
 
+-spec transaction(PoolName::atom(), Fun::fun(), Timeout::integer()) ->
+                         {ok, [binary()]} | {error, Reason::binary()}.
 transaction(PoolName, Fun, Timeout) when is_function(Fun) ->
+    transaction(PoolName, Fun, Timeout, ?POOL_TIMEOUT).
+
+-spec transaction(PoolName::atom(), Fun::fun(),
+                  Timeout::integer(), PoolTimeout::integer()) ->
+                         {ok, [binary()]} | {error, Reason::binary()}.
+transaction(PoolName, Fun, Timeout, PoolTimeout) when is_function(Fun) ->
     F = fun(C) ->
                 try
                     {ok, <<"OK">>} = eredis:q(C, ["MULTI"], Timeout),
@@ -159,4 +187,4 @@ transaction(PoolName, Fun, Timeout) when is_function(Fun) ->
                         {Klass, Reason}
                 end
         end,
-    poolboy:transaction(PoolName, F, Timeout).
+    poolboy:transaction(PoolName, F, PoolTimeout).
